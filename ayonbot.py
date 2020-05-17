@@ -15,44 +15,67 @@ csBool = False
 gsBool = False
 lsBool = False
 
+
+@client.event
+async def on_ready():
+    print('We have logged in as {0.user}'.format(client))
+
+
 @client.event
 async def on_message(message):
     if message.author == client.user:
         return
     if message.content.startswith('!abhelp') or message.content.startswith('!help'):
-        await message.channel.send('!abhelp, !abip, !abstatus, ![start/stop/restart][LS/CS/GS/All].')
-    if message.content.startswith('!abip'):
+        await message.channel.send('Get help: !help\nGet device ip: !ip\nGet process status: !stat\nRunning processes:\nStart/Stop/Restart: ![s/st/r][ls/cs/gs]\nStart/Stop/Restart all: !on/!off/!res\n')
+    elif message.content.startswith('!abip'):
         r = requests.get('https://api.ipify.org/?format=json')
         await message.channel.send(r.json())
-    if message.content.startswith('!abstatus') or message.content.startswith('!stat'):
-        await message.channel.send("CS:" + str(csBool) + " GS:" + str(gsBool) + " LS:" + str(lsBool))
-    if message.content.startswith('!startAll') or message.content.startswith('!on'):
+    elif message.content.startswith('!abstatus') or message.content.startswith('!stat'):
+        mess = "None = Running, Digit value = stopped, No info = Not initialized\n"
+        try:
+            mess += "LS:" + str(lsProc.poll())
+            mess += "\tCS:" + str(csProc.poll())
+            mess += "\tGS:" + str(gsProc.poll())
+        except:
+            mess += "\nUninitialized item"
+        await message.channel.send(mess)
+    elif message.content.startswith('!startAll') or message.content.startswith('!on'):
         await startLS(message)
         await startCS(message)
         await startGS(message)
-    if message.content.startswith('!stopAll') or message.content.startswith('!off'):
+    elif message.content.startswith('!stopAll') or message.content.startswith('!off'):
         await stopLS(message)
         await stopCS(message)
         await stopGS(message)
-    if message.content.startswith('!restartAll') or message.content.startswith('!res'):
+    elif message.content.startswith('!restartAll') or message.content.startswith('!res'):
         await stopLS(message)
         await stopCS(message)
         await stopGS(message)
         await startLS(message)
         await startCS(message)
         await startGS(message)
-    if message.content.startswith('!startLS'):
+    elif message.content.startswith('!startLS') or message.content.startswith('!sls'):
         await startLS(message)
-    if message.content.count('!stopLS'):
+    elif message.content.count('!stopLS') or message.content.startswith('!stls'):
         await stopLS(message)
-    if message.content.startswith('!startCS'):
+    elif message.content.startswith('!startCS') or message.content.startswith('!scs'):
         await startCS(message)
-    if message.content.count('!stopCS'):
+    elif message.content.count('!stopCS') or message.content.startswith('!stcs'):
         await stopCS(message)
-    if message.content.startswith('!startGS'):
+    elif message.content.startswith('!startGS') or message.content.startswith('!sgs'):
         await startGS(message)
-    if message.content.count('!stopGS'):
+    elif message.content.count('!stopGS') or message.content.startswith('!stgs'):
         await stopGS(message)
+    elif message.content.count('!restartLS') or message.content.startswith('!rls'):
+        await stopLS(message)
+        await startLS(message)
+    elif message.content.count('!restartCS') or message.content.startswith('!rcs'):
+        await stopCS(message)
+        await startCS(message)
+    elif message.content.count('!restartGS') or message.content.startswith('!rgs'):
+        await stopGS(message)
+        await startGS(message)
+
 
 async def startLS(message):
     global lsBool, lsProc
@@ -63,6 +86,8 @@ async def startLS(message):
         lsBool = True
     else:
         await message.channel.send('LS already running.')
+
+
 async def stopLS(message):
     global lsBool
     if lsBool:
@@ -71,15 +96,21 @@ async def stopLS(message):
         lsBool = False
     else:
         await message.channel.send('LS is already stopped.')
+
+
 async def startCS(message):
     global csBool, csProc
     if not csBool:
         await message.channel.send('Starting CS.')
         os.chdir('C:\\Users\\Administrator\\Desktop\\Aion-Core-v4.7.5-master\\AC-Chat\\build\\dist\\AC-Chat')
-        csProc = subprocess.Popen('JAVA -version:"1.7" -XX:-UseSplitVerifier -Xms64m -Xmx64m -server -cp ./libs/*;ac-chat.jar com.aionemu.chatserver.ChatServer', creationflags=subprocess.CREATE_NEW_CONSOLE)
+        csProc = subprocess.Popen(
+            'JAVA -version:"1.7" -XX:-UseSplitVerifier -Xms64m -Xmx64m -server -cp ./libs/*;ac-chat.jar com.aionemu.chatserver.ChatServer',
+            creationflags=subprocess.CREATE_NEW_CONSOLE)
         csBool = True
     else:
         await message.channel.send('CS already running.')
+
+
 async def stopCS(message):
     global csBool
     if csBool:
@@ -88,15 +119,21 @@ async def stopCS(message):
         csBool = False
     else:
         await message.channel.send('CS is already stopped.')
+
+
 async def startGS(message):
-    global gsBool,gsProc
+    global gsBool, gsProc
     if not gsBool:
         await message.channel.send('Starting GS.')
         os.chdir('C:\\Users\\Administrator\\Desktop\\Aion-Core-v4.7.5-master\\AC-Game\\build\\dist\\AC-Game')
-        gsProc = subprocess.Popen('JAVA -version:"1.7" -XX:-UseSplitVerifier -Xms3872m -Xmx3872m -server -ea -javaagent:./libs/ac-commons-1.3.jar -cp ./libs/*;AC-Game.jar com.aionemu.gameserver.GameServer', creationflags=subprocess.CREATE_NEW_CONSOLE)
+        gsProc = subprocess.Popen(
+            'JAVA -version:"1.7" -XX:-UseSplitVerifier -Xms3872m -Xmx3872m -server -ea -javaagent:./libs/ac-commons-1.3.jar -cp ./libs/*;AC-Game.jar com.aionemu.gameserver.GameServer',
+            creationflags=subprocess.CREATE_NEW_CONSOLE)
         gsBool = True
     else:
         await message.channel.send('GS already running.')
+
+
 async def stopGS(message):
     global gsBool
     if gsBool:
@@ -105,5 +142,6 @@ async def stopGS(message):
         gsBool = False
     else:
         await message.channel.send('GS is already stopped.')
+
 
 client.run(key)
