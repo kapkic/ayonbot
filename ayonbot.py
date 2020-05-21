@@ -2,11 +2,20 @@ import discord
 import requests
 import subprocess
 import os
-import random
+import socket
+import ssl
 
 # TODO Features:
 # Start aws instance-requires separate instance and full aws version
 # Print console output?
+
+#Fixes SSL
+hostname = 'www.discordapp.com'
+context = ssl.create_default_context()
+
+with socket.create_connection((hostname, 443)) as sock:
+    with context.wrap_socket(sock, server_hostname=hostname) as ssock:
+        print(ssock.version())
 
 client = discord.Client()
 key = open('key.txt').readline()
